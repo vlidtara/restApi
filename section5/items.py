@@ -22,6 +22,22 @@ class Item(Resource):
         if row:
             return {'item': {'name': row[0], 'price': row[1]}}
          
+    @classmethod
+    def insert(cls, item):
+        conn = sqlite3.connect('mydata.db')
+        query = "INSERT INTO {table} VALUES(?,?)".format(table=cls.TABLE_NAME)
+        conn.cursor().execute(query,(item["name"], item["price"]))
+        conn.commit()
+        conn.close()
+    
+    @classmethod
+    def update(cls, item):
+        conn = sqlite3.connect('mydata.db')
+        query = "UPDATE {table} SET {col1}=? WHERE {col0}=?".format(table=cls.TABLE_NAME,col0="name",col1="price")
+        conn.cursor().execute(query,(item["price"],item["name"]))
+        conn.commit()
+        conn.close()
+
         
     #@jwt_required()
     def get(self, name):
@@ -40,33 +56,52 @@ class Item(Resource):
                 "name": name,
                 "price": Item.parser.parse_args()["price"]
             }
-            conn = sqlite3.connect('mydata.db')
-            query = "INSERT INTO {table} VALUES(?,?)".format(table=self.TABLE_NAME)
-            conn.cursor().execute(query,(new_item["name"], new_item["price"]))
-            conn.commit()
-            conn.close()
+            try:
+                self.insert(new_item)
+            except:
+                return {"message": "An error occurred inserting the item."}, 500
             return new_item, 201
             
     def put(self, name):
-        request_data = Item.parser.parse_args()
-        if self.search(name,items):
-            [i.update({"price": request_data["price"]}) for i in items if i["name"] == name ]
-            return {"massage": f'the price {request_data["price"]} was changed for {name}'}, 202
+        new_item = {
+            "name": name,
+            "price": Item.parser.parse_args()["price"]
+        }       
+        if self.find_by_user(name):
+            try:
+                self.update(new_item)
+            except:
+                return {"message": "An error occurred updating the item."}, 500
+            return {'message': "An item with name '{}' is updated.".format(name)}
         else:
-            new_item = {
-                "name": name,
-                "price":request_data["price"]
-            }
-            items.append(new_item)
-            return {"massage": f"{name} was added"}, 201
+            try:
+                self.insert(new_item)
+            except:
+                return {"message": "An error occurred inserting the item."}, 500
+            return {'message': "An item with name '{}' is created.".format(name)}
+
    
     #@jwt_required()
     def delete(self, name):
-        if self.search(name,items):
-            [items.pop(i) for i,val in enumerate(items) if val["name"] == name]
-            return {"item": f"{name} was deleted!"}
+        if self.find_by_user(name):
+            conn = sqlite3.connect('mydata.db')
+            query = "DELETE FROM {table} WHERE name=?".format(table=self.TABLE_NAME)
+            conn.cursor().execute(query,(name,))
+            conn.commit()
+            conn.close()
+            return {'message': "An item with name '{}' is deleted.".format(name)}
+        else:
+            return {'message': "An item with name '{}' not exist.".format(name)}
+ 
+
 
 class Items(Resource):
+    TABLE_NAME = "items"
     #@jwt_required()
     def get(self):
-        return items
+        conn = sqlite3.connect('mydata.db')
+        query = "SELECT * FROM {table}".format(table=self.TABLE_NAME)
+        row = conn.cursor().execute(query).fetchall()
+        conn.close()
+        if row:
+            return {'items': [{"name":i, "price":j} for i,j in row]}
