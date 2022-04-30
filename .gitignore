@@ -127,4 +127,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+<<<<<<< HEAD
 .vscode
+<<<<<<< HEAD
+=======
+
+=======
+.vscode/*
+>>>>>>> a2deb2b (init)
+>>>>>>> a4f160f (ignore)
