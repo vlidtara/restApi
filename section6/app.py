@@ -2,8 +2,8 @@ from flask import Flask,jsonify
 from flask_restful import Api
 from flask_jwt import JWT
 from security import authenticate, identity as identity_function
-from users import Register
-from items import Item, Items
+from resources.users import Register
+from resources.items import Item, Items
 from datetime import timedelta
 
 app = Flask(__name__)

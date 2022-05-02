@@ -1,4 +1,4 @@
-from users import Users
+from resources.users import Users
 from hmac import compare_digest
 
 
