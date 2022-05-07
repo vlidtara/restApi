@@ -5,7 +5,6 @@ from typing import *
 
 
 class Item(Resource):
-
     parser = reqparse.RequestParser()
     parser.add_argument("price", type=float, required=True,
                         help="This field cannot be left blank!")
@@ -63,7 +62,6 @@ class Item(Resource):
 
 
 class Items(Resource):
-
     @jwt_required()
     def get(self):
         row = ItemModule.select_all()

@@ -3,8 +3,6 @@ from flask_restful import Resource, reqparse
 
 
 class Register(Resource):
-    TABLE_NAME = "users"
-
     parser = reqparse.RequestParser()
     parser.add_argument('username',
                         type=str,
